@@ -10,7 +10,7 @@ const passport = require("passport")
 const userRouter = require("./routes/users")
 const indexRouter = require("./routes/index")
 const authRouter = require("./routes/auth")
-// const adminRouter = require("./routes/adminroutes")
+const adminRouter = require("./routes/admin")
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -52,9 +52,9 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.use("/",indexRouter)
-app.use("/users",userRouter)
 app.use("/auth",authRouter)
-// app.use("/api/admin",adminRouter)
+app.use("/users",userRouter)
+app.use("/api/admin",adminRouter)
 
 app.listen(PORT, () => {
     console.log(`Server up and running on port: ${PORT}.`);

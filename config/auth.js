@@ -11,6 +11,17 @@ module.exports = {
         return next();
       }
       res.redirect('/dashboard');      
+    },
+    isAdmin: (req, res, next) => {
+      if(req.user.memberType == 1){
+        return next();
+      }else{
+        res.send("You are not an administrator!!").status(401);
+      }
     }
   };
   
+
+
+  //Error types:
+  //Access hierarchy error: 401

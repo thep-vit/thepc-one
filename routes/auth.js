@@ -52,7 +52,7 @@ passport.use(new GoogleStrategy({
   passport.authenticate('google', { failureRedirect: '/users/login' }),
   (req, res) => {
     // Successful authentication, redirect home.
-    res.redirect('/dashboard');
+    res.send({profile: req.user}).redirect('/api/admin/dashboard');
   });
   
   module.exports = router;

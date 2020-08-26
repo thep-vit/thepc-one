@@ -15,21 +15,16 @@ const UserSchema = new mongoose.Schema({
         type:String,
         required: true
     },
+    memberType:{
+        type: Number,
+        default: -1,
+        required: true
+    },
     date:{
         type: Date,
         default: Date.now
     }
 });
-
-
-//Hash plain text password before save
-UserSchema.pre("save", async function(next) {
-    const user = this
-    if (user.isModified("password")) {
-        user.password = await bcrypt.hash(user.password, 10)
-    }    
-    next()
-})
 
 const User = mongoose.model("User", UserSchema);
 
