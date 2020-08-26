@@ -2,55 +2,57 @@ require('dotenv').config();
 
 const express = require('express')
 const router = express.Router()
-
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20')
+const findOrCreate = require('mongoose-findorcreate')
 
-passport.serializeUser(function(user, done) {
-    done(null, user.id);
-  });
-  
-  passport.deserializeUser(function(id, done) {
-    User.findById(id, function(err, user) {
-      done(err, user);
+const User = require('../models/User')
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:5000/auth/google/verified"
+  },
+  async (accessToken, refreshToken, profile, done) => {
+    await User.findOne({ googleId: profile.id }, async (err, user) => {
+      if(user){
+        // console.log(profile);
+        console.log("OLD");
+        return done(null, profile);
+      }else{
+        const nUser = new User({
+          googleId: profile.id,
+          username: profile.displayName,
+          email: profile.name.familyName
+        });
+        console.log("nUser");
+        console.log(nUser);
+        await nUser.save();
+        return done(null, profile);
+      }
     });
+  })
+  );
+
+  passport.serializeUser((user, done) => {
+    done(null, user);
   });
   
-  //////////////TAKEN FROM PASSPORT OAUTH WEBSITE//////////////////
-  passport.use(new GoogleStrategy({
-      clientID: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/google/thepcone",
-      userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-    },
-    function(accessToken, refreshToken, profile, cb) {
-      // console.log(profile);
-        User.findOrCreate({ googleId: profile.id, email: profile.displayName, name: profile.name.familyName }, function (err, user) {
-        return cb(err, user);
-      });
-    }
-  ));
+  passport.deserializeUser((user, done) => {
+    done(null, user)
+    
+  });
   
   
   router.get("/google",
     passport.authenticate('google', { scope: ["profile"] })
   );
   
-  router.get("/google/thepcone",
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    function(req, res) {
-      // Successful authentication, redirect dashboard? page.
-      res.redirect('/thepcone');
-    });
+  router.get('/google/verified', 
+  passport.authenticate('google', { failureRedirect: '/users/login' }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    res.redirect('/dashboard');
+  });
   
-  
-  router.get("/login", function(req, res) {
-    res.render("login");
-  })
-  
-  router.get("/register", function(req, res) {
-    res.render("register");
-  })
-  
-
   module.exports = router;

@@ -7,11 +7,10 @@ const session = require('express-session')
 const mongoose = require('mongoose')
 const passport = require("passport")
 
-require('./config/passport')(passport)
-
 const userRouter = require("./routes/users")
 const indexRouter = require("./routes/index")
 const authRouter = require("./routes/auth")
+// const adminRouter = require("./routes/adminroutes")
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -52,9 +51,10 @@ app.use(session({
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use("/api/",indexRouter)
-app.use("/api/users",userRouter)
-app.use("/api/auth/",authRouter)
+app.use("/",indexRouter)
+app.use("/users",userRouter)
+app.use("/auth",authRouter)
+// app.use("/api/admin",adminRouter)
 
 app.listen(PORT, () => {
     console.log(`Server up and running on port: ${PORT}.`);
