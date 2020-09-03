@@ -42,7 +42,7 @@ const UserSchema = new mongoose.Schema({
 
 UserSchema.methods.generateToken = async function () {
     const findUser = this
-    const token = jwt.sign({ _id:findUser._id.toString(), isAdmin:findUser.isAdmin.toString() }, "THEPCONE")
+    const token = jwt.sign({ _id:findUser._id.toString(), memberType:findUser.memberType.toString() }, "THEPCONE")
     
     findUser.tokens = findUser.tokens.concat({ token })
     // console.log("TOKEN ADDED:",findUser)

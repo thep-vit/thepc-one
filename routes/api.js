@@ -5,9 +5,10 @@ const router = express.Router()
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20')
 const { check } = require('express-validator')
-const {auth, adminAuth } = require("../config/auth")
+const {auth, adminAuth, memberAuth } = require("../config/auth")
 
 const User = require('../models/User')
+const Event = require('../models/Event')
 
 
 passport.use(new GoogleStrategy({
@@ -44,16 +45,8 @@ passport.use(new GoogleStrategy({
     done(null, user)
     
   });
-  
 
-  router.get('/testAuth', auth, (req, res) => {
-      res.send("This is authorized route");
-  })
-  
-  router.get("/google",
-    passport.authenticate('google', { scope: ["profile"] })
-  );
-  
+    
   router.get('/google/verified', 
   passport.authenticate('google', { failureRedirect: '/users/login' }),
   async (req, res) => {
@@ -62,6 +55,37 @@ passport.use(new GoogleStrategy({
     // const token = await foundUser.generateToken()
     res.send({foundUser})
   });
+  
+
+  router.get('/testAuth', auth, (req, res) => {
+      res.send("This is authorized route");
+  })
+
+  router.post('/newEvent', auth, memberAuth, async (req, res) => {
+    const {eventName, eventDesc, eventLink} = req.body;
+
+    const newEvent = new Event({
+      eventDesc, eventLink, eventName
+    });
+
+    await newEvent.save();
+
+    res.send(newEvent).status(200);
+});
+
+router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
+
+  const foundEvent = await Event.findById(req.params.id);
+
+  foundEvent.approved = true;
+  await foundEvent.save();
+
+  res.send(foundEvent).status(200);
+});
+  
+  router.get("/google",
+    passport.authenticate('google', { scope: ["profile"] })
+  );
 
 
   // Get Name of Author

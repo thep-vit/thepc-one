@@ -27,7 +27,7 @@ const auth = async function (req,res,next) {
       // const token = req.cookies['auth_token']
       console.log(token);
       const decoded = jwt.verify(token, "THEPCONE")
-      const user = await User.findOne( { _id: decoded._id,isAdmin:decoded.isAdmin, "tokens.token":token })
+      const user = await User.findOne( { _id: decoded._id,memberType:decoded.memberType, "tokens.token":token })
       if(!user) {
           throw new Error()
       }
@@ -46,19 +46,39 @@ const adminAuth = function (req,res,next){
       const token = req.header("Authorization").replace("Bearer ","")
       const decoded = jwt.verify(token ,'THEPCONE')
       // console.log("from Admin Auth: isAdmin: ",decoded.isAdmin)
-      if(decoded.isAdmin ==="-1"){
+      if(decoded.memberType ==="-1" | decoded.memberType ==="0"){
           throw new Error()
+      }else if( decoded.memberType ==="1"){
+        next()
+      }else{
+        throw new Error()
       }
-
-      next()
       
   } catch(e){
-      res.status(401).send("You are not karan bhowmick.")
+      res.status(401).send("You are not a board member.")
+  }
+}
+
+const memberAuth = function (req,res,next){
+  try{
+      const token = req.header("Authorization").replace("Bearer ","")
+      const decoded = jwt.verify(token ,'THEPCONE')
+      // console.log("from Admin Auth: isAdmin: ",decoded.isAdmin)
+      if(decoded.memberType ==="-1"){
+          throw new Error()
+      }else if( decoded.memberType ==="1" | decoded.memberType ==="0"){
+        next()
+      }else{
+        throw new Error()
+      }
+      
+  } catch(e){
+      res.status(401).send("You are not a member.")
   }
 }
 
 module.exports = {
-  auth, adminAuth, forwardAuthenticated, ensureAuthenticated
+  auth, adminAuth, forwardAuthenticated, ensureAuthenticated, memberAuth
 }
   //Error types:
   //Access hierarchy error: 401
