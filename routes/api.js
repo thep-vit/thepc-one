@@ -5,7 +5,7 @@ const router = express.Router()
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20')
 const { check } = require('express-validator')
-const {auth, adminAuth, memberAuth } = require("../config/auth")
+const { ensureAuthenticated } = require("../middleware/auth")
 
 const User = require('../models/User')
 const Event = require('../models/Event')
