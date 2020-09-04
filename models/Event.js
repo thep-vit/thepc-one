@@ -13,7 +13,12 @@ const EventSchema = new mongoose.Schema({
         type:String,
         required: true
     },
-    date:{
+    approved:{
+        type:Boolean,
+        required: true,
+        default: false
+    },
+    dateCreated:{
         type: Date,
         default: Date.now
     }
