@@ -5,15 +5,124 @@ const router = express.Router()
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20')
 const { check } = require('express-validator')
-const { ensureAuthenticated } = require("../middleware/auth")
+const { ensureAuthenticated, auth, memberAuth, adminAuth } = require("../middleware/auth")
 
 const User = require('../models/User')
 const Event = require('../models/Event')
 
+router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
+
+  const foundEvent = await Event.findById(req.params.id);
+
+  foundEvent.approved = true;
+  await foundEvent.save();
+
+  res.send(foundEvent).status(200);
+});
+  
+  router.get("/google",
+    passport.authenticate('google', { scope: ["profile"] })
+  );
+
+//API Documentation
+/**
+ * @api {post} /api/newEvent
+ * @apiName GoogleOAuth
+ * @apiGroup Events
+ *
+ * @apiParam {String} eventName          Mandatory event name.
+ * @apiParam {String} eventDesc          Mandatory event description.
+ * @apiParam {String} eventLink          Mandatory  event link.
+ * 
+ * @apiSuccess {Boolean} approved Approval status of the event.
+ * @apiSuccess {mongoID} _id  mongoID of the user object.
+ * @apiSuccess {String} eventDesc Event description.
+ * @apiSuccess {String} eventLink Link for the event.
+ * @apiSuccess {String} eventName Name of the event.
+ * @apiSuccess {Date} dateCreated Date of creation of the event.
+ * @apiSuccess {String} token auth tokens array
+ *
+ * @apiSuccessExample newEvent:
+ *     {
+ *   "approved": false,
+ *    "_id": "5f6870823dcf5d40a0fa6d28",
+ *   "eventDesc": "ABC Event",
+ *   "eventLink": "https://www.com",
+ *   "eventName": "ABC",
+ *   "dateCreated": "2020-09-21T09:21:06.111Z",
+ *   "__v": 0
+}
+ *
+ * @apiError authError Please authenticate.
+ * @apiError adminError You do not have admin rights.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error": "UserNotFound"
+ *     }
+ **/
+/**
+ * @api {patch} /api/approveEvent/:id
+ * @apiName THEPC One
+ * @apiGroup Events
+ * 
+ * @apiParam {String} id eventID which is stored as mongoID on teh database.
+ * @apiSuccess {Boolean} approved Approval status of the event.
+ * @apiSuccess {mongoID} _id  mongoID of the user object.
+ * @apiSuccess {String} eventDesc Event description.
+ * @apiSuccess {String} eventLink Link for the event.
+ * @apiSuccess {String} eventName Name of the event.
+ * @apiSuccess {Date} dateCreated Date of creation of the event.
+ * @apiSuccess {String} token auth tokens array
+ * @apiSuccessExample approvedEvent:
+ *     {
+ *   "approved": true,
+ *    "_id": "5f6870823dcf5d40a0fa6d28",
+ *   "eventDesc": "ABC Event",
+ *   "eventLink": "https://www.com",
+ *   "eventName": "ABC",
+ *   "dateCreated": "2020-09-21T09:21:06.111Z",
+ *   "__v": 0
+}
+ *
+ * @apiError authError Please authenticate.
+ * @apiError adminError You do not have admin rights.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error": "UserNotFound"
+ *     }
+ **/
+/** 
+ * @api {get} /google/verified
+ * @apiName GoogleOAuth
+ * @apiGroup User
+ *
+ * @apiSuccess {Integer} memberType member classifications of Users.
+ * @apiSuccess {mongoID} _id  mongoID of the user object.
+ 
+ *
+ * @apiSuccessExample newEvent:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "firstname": "John",
+ *       "lastname": "Doe"
+ *     }
+ *
+ * @apiError UserNotFound The id of the User was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error": "UserNotFound"
+ *     }
+ **/
 
 passport.use(new GoogleStrategy({
-    clientID: process.env.CLIENT_ID,
-    clientSecret: process.env.CLIENT_SECRET,
+    clientID: "579861223734-4tm7vphqhmhmap7l6j8s1m7l3pse681o.apps.googleusercontent.com",
+    clientSecret: "usKZ3NHdC3sAmiymhixCnfmd",
     callbackURL: "http://localhost:3000/api/google/verified"
   },
   async (accessToken, refreshToken, profile, done) => {
@@ -70,7 +179,7 @@ passport.use(new GoogleStrategy({
 
     await newEvent.save();
 
-    res.send(newEvent).status(200);
+    res.send({newEvenet: newEvent}).status(200);
 });
 
 router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
@@ -104,3 +213,7 @@ router.get("/users/name/:id", async (req,res)=> {
 })
   
   module.exports = router
+
+
+
+  
