@@ -155,6 +155,10 @@ passport.use(new GoogleStrategy({
     
   });
 
+  
+  router.get("/google",
+    passport.authenticate('google', { scope: ['email'] })
+  );
     
   router.get('/google/verified', 
   passport.authenticate('google', { failureRedirect: '/users/login' }),
@@ -166,15 +170,80 @@ passport.use(new GoogleStrategy({
   });
   
 
-  router.get('/testAuth', auth, (req, res) => {
-      res.send("This is authorized route");
-  })
+  //@route    /api/user/:eventID
+  //@privacy  auth users
+  //@method   PATCH
+  //@res      Register user for event with id = req.params.id  
+  router.patch('/user/:eventID', auth, async (req, res) => {
+    const user = req.user;
+    const foundEvent = await Event.findById({_id: req.params.eventID})
+    
+    //Add missing attr to user and event objects (safety feature)
+    if(!req.user.eventsRegistered){
+      user.eventsRegistered = [];
+      await user.save();
+    }
+    if(!foundEvent.regCount && foundEvent.regCount !== 0){
+      foundEvent.regCount = 0;
+    }
+    if(!foundEvent.regUsers){
+      foundEvent.regUsers = [];
+    }
 
+    //Check if user already registered
+    for (let index = 0; index < user.eventsRegistered.length; index++) {
+      if(user.eventsRegistered[index]._id === req.params.eventID){
+        user.eventsRegistered = [];
+        user.save();
+        return res.send({"error": "You've already registered for this event."});
+      }
+      
+    }
+
+    //Add a reg count to the event object
+    foundEvent.regCount += 1;
+    foundEvent.regUsers.push({
+      _id: user._id,
+      name: user.username,
+    });
+
+    const regEvent = {
+      _id: req.params.eventID,
+      name: foundEvent.eventName
+    }
+
+    //Add registered event to the particular user object
+    user.eventsRegistered.push(regEvent);
+
+    //Save changes
+    await user.save();
+    await foundEvent.save();
+
+    //Send res
+    console.log(foundEvent);
+    res.send(user);
+  });
+
+  
+  //@route    /api/allEvents
+  //@privacy  auth users
+  //@method   GET
+  //@res      Gets all events
+  router.get('/allEvents', async (req, res) => {
+    const allEvents = await Event.findOne();
+    console.log(allEvents);
+    res.send(allEvents);
+  });
+
+  //@route    /api/newEvent
+  //@privacy  only members
+  //@method   POST
+  //@res      Adds a new event to the list of events
   router.post('/newEvent', auth, memberAuth, async (req, res) => {
-    const {eventName, eventDesc, eventLink} = req.body;
+    const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload} = req.body;
 
     const newEvent = new Event({
-      eventDesc, eventLink, eventName
+      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload
     });
 
     await newEvent.save();
@@ -182,6 +251,10 @@ passport.use(new GoogleStrategy({
     res.send({newEvenet: newEvent}).status(200);
 });
 
+  //@route    /api/approveEvent/:id
+  //@privacy  only board members
+  //@method   PATCH
+  //@res      Approves the event with id = req.params.id
 router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
@@ -191,27 +264,7 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 
   res.send(foundEvent).status(200);
 });
-  
-  router.get("/google",
-    passport.authenticate('google', { scope: ['email'] })
-  );
-
-
-  // Get Name of Author
-router.get("/users/name/:id", async (req,res)=> {
-    try {
-        const userName = await User.findById(req.params.id).select("name")
-        if (!userName){
-            return res.status(404).send
-        }
-        res.send(userName.name)
-        
-        
-    } catch (e){
-        res.status(400).send()
-    }
-})
-  
+    
   module.exports = router
 
 

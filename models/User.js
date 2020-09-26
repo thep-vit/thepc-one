@@ -22,6 +22,14 @@ const UserSchema = new mongoose.Schema({
         default: -1,
         required: true
     },
+    eventsRegistered: [{
+        _id: {
+            type: String,
+        }, 
+        name: {
+            type: String,
+        }
+    }],
     isAdmin:{
         type: Boolean,
         required:true,
