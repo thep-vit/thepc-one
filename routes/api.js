@@ -21,7 +21,7 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 });
   
   router.get("/google",
-    passport.authenticate('google', { scope: ['email'] })
+    passport.authenticate('google', { scope: ['profile', 'email'] })
   );
 
 //API Documentation
@@ -128,14 +128,15 @@ passport.use(new GoogleStrategy({
   async (accessToken, refreshToken, profile, done) => {
     await User.findOne({ googleId: profile.id }, async (err, user) => {
       if(user){
-        await user.generateToken();
+        const token = await user.generateToken();
         console.log(user);
         return done(null, profile);
       }else{
         const nUser = new User({
           googleId: profile.id,
           // username: profile.displayName,
-          // email: profile.name.familyName
+          email: profile.emails[0].value,
+          photo: profile.photos[0].value
         });
         await nUser.generateToken();
         await nUser.save();
@@ -157,7 +158,7 @@ passport.use(new GoogleStrategy({
 
   
   router.get("/google",
-    passport.authenticate('google', { scope: ['email'] })
+    passport.authenticate('google', { scope: ['profile', 'email'] })
   );
     
   router.get('/google/verified', 

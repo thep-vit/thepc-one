@@ -17,6 +17,12 @@ const UserSchema = new mongoose.Schema({
         type:String,
         // required: true
     },
+    picture: {
+        type: String,
+    },
+    token: {
+        type: String,
+    },
     memberType:{
         type: Number,
         default: -1,
