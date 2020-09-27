@@ -139,7 +139,7 @@ passport.use(new GoogleStrategy({
         });
         await nUser.generateToken();
         await nUser.save();
-        console.log(user);
+        console.log(profile);
         return done(null, nUser);
       }
     });
@@ -166,7 +166,7 @@ passport.use(new GoogleStrategy({
     // Successful authentication, redirect home.
     const foundUser = req.user;
     // const token = await foundUser.generateToken()
-    res.send({foundUser}).status(200)
+    res.status(200).send({foundUser});
   });
   
 
