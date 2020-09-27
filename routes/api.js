@@ -256,7 +256,7 @@ passport.use(new GoogleStrategy({
   //@privacy  only board members
   //@method   PATCH
   //@res      Approves the event with id = req.params.id
-router.post('/approveEvent/:id', auth, adminAuth, async (req, res) => {
+router.post('/approveEvent/:id', auth, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
 
