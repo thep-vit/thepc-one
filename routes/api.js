@@ -134,8 +134,8 @@ passport.use(new GoogleStrategy({
       }else{
         const nUser = new User({
           googleId: profile.id,
-          username: profile.displayName,
-          email: profile.name.familyName
+          // username: profile.displayName,
+          // email: profile.name.familyName
         });
         await nUser.generateToken();
         await nUser.save();
