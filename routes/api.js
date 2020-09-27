@@ -130,7 +130,7 @@ passport.use(new GoogleStrategy({
       if(user){
         const token = await user.generateToken();
         console.log(user);
-        return done(null, profile);
+        return done(null, user);
       }else{
         const nUser = new User({
           googleId: profile.id,
