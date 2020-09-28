@@ -6,12 +6,14 @@ const validator = require("validator")
 
 const UserSchema = new mongoose.Schema({
     googleId: {
-        type: String,
-        required: true
+        type: String
     },
     username:{
         type: String,
         // required: true
+    },
+    password: {
+        type: String
     },
     email:{
         type:String,
@@ -62,6 +64,33 @@ UserSchema.methods.generateToken = async function () {
     // console.log("TOKEN ADDED:",findUser)
     await findUser.save()
     return token
+
+}
+
+UserSchema.pre("save", async function(next) {
+    const user = this
+    // console.log("this prints before saving")
+
+    if (user.isModified("password")) {
+        user.password = await bcrypt.hash(user.password, 8)
+    }
+    
+    next()
+
+})
+
+UserSchema.statics.findByCredentials = async (email, password) => {
+    const findUser = await User.findOne({ email })
+    if(!findUser) {
+        throw new Error ("Unable to Login!")
+    }
+    console.log("USer found: " + findUser);
+    const isMatch = await bcrypt.compare(password, findUser.password)
+
+    if(!isMatch) {
+        throw new Error("Unable to Login!")
+    }
+    return findUser
 
 }
 
