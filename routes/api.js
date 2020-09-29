@@ -176,6 +176,7 @@ passport.use(new GoogleStrategy({
     // Successful authentication, redirect home.
     const foundUser = req.user;
     // const token = await foundUser.generateToken()
+    console.log(foundUser);
     res.status(200).send({foundUser});
   });
   
