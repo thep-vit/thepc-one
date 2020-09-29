@@ -123,7 +123,7 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: "390060085294-k1l5r25ugf2jpsqorsmns7m8o3ject6f.apps.googleusercontent.com",
     clientSecret: "CGSdCoQ0dUn3-yoTDzVYd7wB",
-    callbackURL: "http://localhost:3000/home"
+    callbackURL: "http://thepc-one.herokuapp.com/home"
   },
   async (accessToken, refreshToken, profile, done) => {
     await User.findOne({ googleId: profile.id }, async (err, user) => {
