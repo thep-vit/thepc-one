@@ -161,7 +161,7 @@ passport.use(new GoogleStrategy({
     passport.authenticate('google', { scope: ['profile', 'email'] })
   );
     
-  router.get('/', 
+  router.get('/google/verified', 
   passport.authenticate('google', { failureRedirect: '/users/login' }),
   async (req, res) => {
     // Successful authentication, redirect home.
