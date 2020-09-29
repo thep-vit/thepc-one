@@ -123,7 +123,7 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: "390060085294-k1l5r25ugf2jpsqorsmns7m8o3ject6f.apps.googleusercontent.com",
     clientSecret: "CGSdCoQ0dUn3-yoTDzVYd7wB",
-    callbackURL: "http://thepc-one.herokuapp.com/api/google/verified"
+    callbackURL: "http://thepc-one.herokuapp.com/api/"
   },
   async (accessToken, refreshToken, profile, done) => {
     await User.findOne({ googleId: profile.id }, async (err, user) => {
@@ -161,7 +161,7 @@ passport.use(new GoogleStrategy({
     passport.authenticate('google', { scope: ['profile', 'email'] })
   );
     
-  router.get('/google/verified', 
+  router.get('/', 
   passport.authenticate('google', { failureRedirect: '/users/login' }),
   async (req, res) => {
     // Successful authentication, redirect home.
@@ -203,7 +203,7 @@ passport.use(new GoogleStrategy({
   //@res      login route using form  
   router.post('/user/login', async (req, res) => {
     try {
-        const userFound = await User.findByCredentials(req.body.email, "Abhinav123");
+        const userFound = await User.findByCredentials(req.body.email, req.body.password);
         await userFound.generateToken();
 
         res.status(200).send(userFound);
