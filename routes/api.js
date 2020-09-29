@@ -123,7 +123,7 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: "390060085294-k1l5r25ugf2jpsqorsmns7m8o3ject6f.apps.googleusercontent.com",
     clientSecret: "CGSdCoQ0dUn3-yoTDzVYd7wB",
-    callbackURL: "http://thepc-one.herokuapp.com/api/google/verified"
+    callbackURL: "http://localhost:3000/home"
   },
   async (accessToken, refreshToken, profile, done) => {
     await User.findOne({ googleId: profile.id }, async (err, user) => {
@@ -162,6 +162,15 @@ passport.use(new GoogleStrategy({
   );
     
   router.get('/google/verified', 
+  passport.authenticate('google', { failureRedirect: '/users/login' }),
+  async (req, res) => {
+    // Successful authentication, redirect home.
+    const foundUser = req.user;
+    // const token = await foundUser.generateToken()
+    res.status(200).send({foundUser});
+  });
+
+  router.get('/home', 
   passport.authenticate('google', { failureRedirect: '/users/login' }),
   async (req, res) => {
     // Successful authentication, redirect home.
