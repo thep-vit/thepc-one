@@ -123,7 +123,7 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 passport.use(new GoogleStrategy({
     clientID: "390060085294-k1l5r25ugf2jpsqorsmns7m8o3ject6f.apps.googleusercontent.com",
     clientSecret: "CGSdCoQ0dUn3-yoTDzVYd7wB",
-    callbackURL: "http://thepc-one.herokuapp.com/home"
+    callbackURL: "http://localhost:3000/api/google/verified"
   },
   async (accessToken, refreshToken, profile, done) => {
     await User.findOne({ googleId: profile.id }, async (err, user) => {
@@ -170,15 +170,15 @@ passport.use(new GoogleStrategy({
     res.status(200).send({foundUser});
   });
 
-  router.get('/home', 
-  passport.authenticate('google', { failureRedirect: '/users/login' }),
-  async (req, res) => {
-    // Successful authentication, redirect home.
-    const foundUser = req.user;
-    // const token = await foundUser.generateToken()
-    console.log(foundUser);
-    res.status(200).send({foundUser});
-  });
+  // router.get('/home', 
+  // passport.authenticate('google', { failureRedirect: '/users/login' }),
+  // async (req, res) => {
+  //   // Successful authentication, redirect home.
+  //   const foundUser = req.user;
+  //   // const token = await foundUser.generateToken()
+  //   console.log(foundUser);
+  //   res.status(200).send({foundUser});
+  // });
   
 
   //@route    /api/user/signup
@@ -198,7 +198,7 @@ passport.use(new GoogleStrategy({
         const newUser = new User({email: email, password: password, username:name});
         await newUser.save();
         await newUser.generateToken();
-        return res.status(200).send({message: "Sucessfullly registered."});
+        return res.status(200).send(newUser);
 
       }
     } catch (err) {
@@ -293,10 +293,10 @@ passport.use(new GoogleStrategy({
   //@method   POST
   //@res      Adds a new event to the list of events
   router.post('/newEvent', auth, memberAuth, async (req, res) => {
-    const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload} = req.body;
+    const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
 
     const newEvent = new Event({
-      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload
+      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart
     });
 
     await newEvent.save();
