@@ -21,7 +21,7 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 });
   
   router.get("/google",
-    passport.authenticate('google', { scope: ['email'] })
+    passport.authenticate('google', { scope: ['profile', 'email'] })
   );
 
 //API Documentation
@@ -128,18 +128,19 @@ passport.use(new GoogleStrategy({
   async (accessToken, refreshToken, profile, done) => {
     await User.findOne({ googleId: profile.id }, async (err, user) => {
       if(user){
-        await user.generateToken();
+        const token = await user.generateToken();
         console.log(user);
-        return done(null, profile);
+        return done(null, user);
       }else{
         const nUser = new User({
           googleId: profile.id,
-          username: profile.displayName,
-          email: profile.name.familyName
+          // username: profile.displayName,
+          email: profile.emails[0].value,
+          photo: profile.photos[0].value
         });
         await nUser.generateToken();
         await nUser.save();
-        console.log(user);
+        console.log(profile);
         return done(null, nUser);
       }
     });
@@ -157,7 +158,7 @@ passport.use(new GoogleStrategy({
 
   
   router.get("/google",
-    passport.authenticate('google', { scope: ['email'] })
+    passport.authenticate('google', { scope: ['profile', 'email'] })
   );
     
   router.get('/google/verified', 
@@ -166,9 +167,61 @@ passport.use(new GoogleStrategy({
     // Successful authentication, redirect home.
     const foundUser = req.user;
     // const token = await foundUser.generateToken()
-    res.send({foundUser})
+    res.status(200).send({foundUser});
   });
+
+  // router.get('/home', 
+  // passport.authenticate('google', { failureRedirect: '/users/login' }),
+  // async (req, res) => {
+  //   // Successful authentication, redirect home.
+  //   const foundUser = req.user;
+  //   // const token = await foundUser.generateToken()
+  //   console.log(foundUser);
+  //   res.status(200).send({foundUser});
+  // });
   
+
+  //@route    /api/user/signup
+  //@privacy  public
+  //@method   POST
+  //@res      Register user for THEPC One
+  router.post('/user/signup', async (req, res) => {
+    const { email, password, password2, name } = req.body;
+    
+    try {
+      const foundUser = await User.findOne({email: email});
+      if(foundUser){
+        return res.status(500).send({message: `User with email ${email} already exists.`})
+      }else if(password !== password2){
+        return res.status(500).send({message: "Passwords do not match"});
+      }else{
+        const newUser = new User({email: email, password: password, username:name});
+        await newUser.save();
+        await newUser.generateToken();
+        return res.status(200).send(newUser);
+
+      }
+    } catch (err) {
+        console.log(err);
+        res.status(400).send(err);
+    }
+  });
+
+  //@route    /api/user/login
+  //@privacy  puhblic
+  //@method   POST
+  //@res      login route using form  
+  router.post('/user/login', async (req, res) => {
+    try {
+        const userFound = await User.findByCredentials(req.body.email, req.body.password);
+        await userFound.generateToken();
+
+        res.status(200).send(userFound);
+    } catch (err) {
+      console.log(err);
+      res.status(400).send(err);      
+    }
+  });
 
   //@route    /api/user/:eventID
   //@privacy  auth users
@@ -240,10 +293,10 @@ passport.use(new GoogleStrategy({
   //@method   POST
   //@res      Adds a new event to the list of events
   router.post('/newEvent', auth, memberAuth, async (req, res) => {
-    const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload} = req.body;
+    const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
 
     const newEvent = new Event({
-      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload
+      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart
     });
 
     await newEvent.save();
@@ -255,7 +308,7 @@ passport.use(new GoogleStrategy({
   //@privacy  only board members
   //@method   PATCH
   //@res      Approves the event with id = req.params.id
-router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
+router.post('/approveEvent/:id', auth, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
 

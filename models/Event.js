@@ -66,7 +66,20 @@ const EventSchema = new mongoose.Schema({
     dateCreated:{
         type: Date,
         default: Date.now
+    },
+    eventStart:{
+        type: Date,
+        default: Date.now
+    },
+    eventEnd:{
+        type: Date,
+        default: Date.now
+    },
+    regStart:{
+        type: Date,
+        default: Date.now
     }
+
 });
 
 const Event = mongoose.model("Event", EventSchema);
