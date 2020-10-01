@@ -283,7 +283,7 @@ passport.use(new GoogleStrategy({
   //@method   GET
   //@res      Gets all events
   router.get('/allEvents', async (req, res) => {
-    const allEvents = await Event.findOne();
+    const allEvents = await Event.find();
     console.log(allEvents);
     res.send(allEvents);
   });
