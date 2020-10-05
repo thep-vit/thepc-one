@@ -262,7 +262,8 @@ passport.use(new GoogleStrategy({
 
     const regEvent = {
       _id: req.params.eventID,
-      name: foundEvent.eventName
+      name: foundEvent.eventName,
+      date: foundEvent.eventStart
     }
 
     //Add registered event to the particular user object
