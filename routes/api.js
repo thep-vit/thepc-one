@@ -297,7 +297,7 @@ passport.use(new GoogleStrategy({
     const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
 
     const newEvent = new Event({
-      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, nunmOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart
+      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart
     });
 
     await newEvent.save();
