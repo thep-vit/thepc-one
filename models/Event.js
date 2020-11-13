@@ -78,6 +78,9 @@ const EventSchema = new mongoose.Schema({
     regStart:{
         type: Date,
         default: Date.now
+    },
+    eventImg:{
+        type: Buffer
     }
 
 });

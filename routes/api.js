@@ -10,6 +10,20 @@ const { ensureAuthenticated, auth, memberAuth, adminAuth } = require("../middlew
 const User = require('../models/User')
 const Event = require('../models/Event')
 
+
+const upload = multer({
+  limits: {
+      fileSize: 5000000
+  },
+  fileFilter(req,file,cb) {
+      if (!file.originalname.match(/\.(jpg|jpeg|png|JPG|PNG|JPEG)$/)) {
+          return cb(new Error("Upload Proper File"))
+      }
+      cb(undefined,true)
+  }
+})
+
+
 router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
@@ -293,11 +307,13 @@ passport.use(new GoogleStrategy({
   //@privacy  only members
   //@method   POST
   //@res      Adds a new event to the list of events
-  router.post('/newEvent', auth, memberAuth, async (req, res) => {
+  router.post('/newEvent', auth, memberAuth, upload.single("eventImg"), async (req, res) => {
     const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
 
+    const buffer = await sharp(req.file.buffer).png().toBuffer();
+
     const newEvent = new Event({
-      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart
+      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart, eventImg: buffer
     });
 
     await newEvent.save();
@@ -305,7 +321,7 @@ passport.use(new GoogleStrategy({
     res.send({newEvenet: newEvent}).status(200);
 });
 
-  //@route    /api/approveEvent/:id
+  //@route    /api/approveEvent/:id/:approved
   //@privacy  only board members
   //@method   PATCH
   //@res      Approves the event with id = req.params.id
@@ -313,7 +329,7 @@ router.post('/approveEvent/:id', auth, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
 
-  foundEvent.approved = true;
+  foundEvent.approved = req.params.approved;
   await foundEvent.save();
 
   res.send(foundEvent).status(200);

@@ -8,9 +8,9 @@
     "dev": "nodemon index",
     "start": "node index"
   },
-  "apidoc":{
-      "title": "THEPC One Backend",
-      "url" : "https://thepc-one.herokuapp.com"
+  "apidoc": {
+    "title": "THEPC One Backend",
+    "url": "https://thepc-one.herokuapp.com"
   },
   "author": "Abhinav",
   "license": "MIT",
@@ -42,5 +42,8 @@
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
+  },
+  "engines": {
+    "node": "12"
   }
 }
