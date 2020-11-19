@@ -81,7 +81,15 @@ const EventSchema = new mongoose.Schema({
     },
     eventImg:{
         type: Buffer
-    }
+    },
+    createdBy: [{
+        _id: {
+            type: String,
+        }, 
+        name: {
+            type: String,
+        }
+    }]
 
 });
 

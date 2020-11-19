@@ -311,12 +311,21 @@ passport.use(new GoogleStrategy({
   router.post('/newEvent', auth, memberAuth, upload.single("eventImg"), async (req, res) => {
     const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
 
-    const buffer = await sharp(req.file.buffer).png().toBuffer();
+    const user = await User.findOne({_id: req.user._id});
+
+    const createdBy = {
+      _id: user._id,
+      name: user.username
+    }
+
+    // const buffer = await sharp(req.file.buffer).png().toBuffer();
 
     const newEvent = new Event({
-      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart, eventImg: buffer
+      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart, createdBy
+      // , eventImg: buffer
     });
 
+    newEvent
     await newEvent.save();
 
     res.send({newEvenet: newEvent}).status(200);
