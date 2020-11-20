@@ -238,6 +238,25 @@ passport.use(new GoogleStrategy({
     }
   });
 
+  router.post('/google/auth', async (req, res) => {
+    const {email, username } = req.body;
+    try {
+      const foundUser = await User.findOne( {email} );
+
+      if(foundUser){
+        await foundUser.generateToken();
+        res.status(200).send(foundUser)
+      }else{
+        const newUser =new User({ email: email, username: username});
+        await newUser.save();await newUser.generateToken();
+        return res.status(200).send(newUser)
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(400).send(error);
+    }
+  });
+
   //@route    /api/user/:eventID
   //@privacy  auth users
   //@method   PATCH
@@ -343,10 +362,6 @@ router.post('/approveEvent/:id/:approved', auth, async (req, res) => {
   await foundEvent.save();
 
   res.send(foundEvent).status(200);
-});
-    
-  module.exports = router
+});    
 
-
-
-  
+module.exports = router
