@@ -358,10 +358,15 @@ router.post('/approveEvent/:id/:approved', auth, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
 
-  foundEvent.approved = req.params.approved;
-  await foundEvent.save();
-
-  res.send(foundEvent).status(200);
+  
+  if(approved){
+    foundEvent.approved = req.params.approved;
+    await foundEvent.save();
+    res.send(foundEvent).status(200);
+  }else{
+    await Event.findByIdAndDelete(req.params.id);
+    res.send({"message": `Event ${foundEvent.eventName} rejected successfully`}).status(200);
+  }
 });    
 
 module.exports = router
