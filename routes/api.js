@@ -5,6 +5,7 @@ const router = express.Router()
 const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20')
 const multer = require('multer')
+const sharp = require("sharp")
 const { check } = require('express-validator')
 const { ensureAuthenticated, auth, memberAuth, adminAuth } = require("../middleware/auth")
 
@@ -328,7 +329,9 @@ passport.use(new GoogleStrategy({
   //@method   POST
   //@res      Adds a new event to the list of events
   router.post('/newEvent', auth, memberAuth, upload.single("eventImg"), async (req, res) => {
-    const {eventName, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
+    const {eventName, textTime, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
+
+    const buffer = await sharp(req.file.buffer).png().toBuffer()
 
     const user = await User.findOne({_id: req.user._id});
 
@@ -337,17 +340,15 @@ passport.use(new GoogleStrategy({
       name: user.username
     }
 
-    // const buffer = await sharp(req.file.buffer).png().toBuffer();
-
     const newEvent = new Event({
-      eventDesc, eventLink, eventName, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart, createdBy
-      // , eventImg: buffer
+      eventDesc, eventLink, eventName, textTime, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart, createdBy
+      , eventImg: buffer
     });
 
     newEvent
     await newEvent.save();
 
-    res.send({newEvenet: newEvent}).status(200);
+    res.send({newEvent: newEvent}).status(200);
 });
 
   //@route    /api/approveEvent/:id/:approved

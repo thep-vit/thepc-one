@@ -9,6 +9,9 @@ const EventSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    textTime: {
+        type: String
+    },
     eventLink:{
         type:String,
         required: true
