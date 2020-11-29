@@ -360,7 +360,7 @@ router.post('/approveEvent/:id/:approved', auth, async (req, res) => {
   const foundEvent = await Event.findById(req.params.id);
 
   
-  if(approved){
+  if(req.params.approved == "true"){
     foundEvent.approved = req.params.approved;
     await foundEvent.save();
     res.send(foundEvent).status(200);
