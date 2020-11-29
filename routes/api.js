@@ -331,6 +331,7 @@ passport.use(new GoogleStrategy({
   router.post('/newEvent', auth, memberAuth, upload.single("eventImg"), async (req, res) => {
     const {eventName, textTime, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
 
+    console.log(req.file)
     const buffer = await sharp(req.file.buffer).png().toBuffer()
 
     const user = await User.findOne({_id: req.user._id});
