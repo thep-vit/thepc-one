@@ -371,4 +371,27 @@ router.post('/approveEvent/:id/:approved', auth, async (req, res) => {
   }
 });    
 
+//@route    /api/ccs/submit
+//@privacy  everyone who is logged in
+//@method   PoST
+//@res      submits the CCS application form
+
+router.post('/ccs/submit', auth, async (req, res) => {
+  try {
+    const { name, email, phNum, whatsapp, regNum, depts, strengths, weaknesses, whyDoYouJoin } = req.body;
+
+    const newCCS = new CCS({
+      name, email, phNum, whatsapp, regNum, depts, strengths, weaknesses, whyDoYouJoin
+    });
+
+    await newCCS.save()
+
+    res.status(200).send(newCCS)
+  } catch (error) {
+    res.status(500).send(error)
+  }
+
+});
+
 module.exports = router
+
