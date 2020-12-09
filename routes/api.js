@@ -11,6 +11,7 @@ const { ensureAuthenticated, auth, memberAuth, adminAuth } = require("../middlew
 
 const User = require('../models/User')
 const Event = require('../models/Event')
+const CCS = require('../models/CCS')
 
 
 const upload = multer({
