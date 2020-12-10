@@ -411,7 +411,7 @@ router.post('/ccs/submit', auth, async (req, res) => {
 //@method   GET
 //@res      Gets all CCS submissions
 router.get('/ccs/submissions', auth, memberAuth, ccsDoc.single("ccsFile"), async (req, res) => {
-  const allSubmissions = await User.find()
+  const allSubmissions = await CCS.find()
   if(!allSubmissions){
     res.status(404).send({"message": "No submissions found!"})
   }
@@ -422,15 +422,17 @@ router.get('/ccs/submissions', auth, memberAuth, ccsDoc.single("ccsFile"), async
 //@privacy  Everyone who is logged in
 //@method   POST
 //@res      Submits the CCS document and adds it to the existing CCS application
-router.post('ccs/fileUpload', auth, async (req, res) => {
+router.post('/ccs/fileUpload', auth, ccsDoc.single("ccsFile"), async (req, res) => {
   const userSub = await CCS.find({"applicant": req.user._id})
 
   if(!userSub){
     res.status(500).send({"message": "You have not applied for CCS. This is not applicable for you!"})
   }
 
-  const buffer = await sharp(req.file.buffer).png().toBuffer()
-
+  const buffer = await sharp(req.file.buffer).toBuffer()
+  // let entryType = req.files.draft.mimetype;
+  // entryType = entryType.split('/')[1];
+  
   userSub.ccsFile = buffer
 
   await userSub.save()

@@ -33,6 +33,9 @@ const CCSSchema = new mongoose.Schema({
     },
     applicant: {
         type: mongoose.Schema.Types.ObjectId,
+    },
+    entryType: {
+        type: String
     }
 })
 
