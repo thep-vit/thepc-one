@@ -27,6 +27,12 @@ const CCSSchema = new mongoose.Schema({
     },
     whyDoYouJoin: {
         type: String
+    },
+    ccsDoc: {
+        type: Buffer
+    },
+    applicant: {
+        type: mongoose.Schema.Types.ObjectId,
     }
 })
 

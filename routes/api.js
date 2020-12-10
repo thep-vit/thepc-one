@@ -26,6 +26,18 @@ const upload = multer({
   }
 })
 
+const ccsDoc = multer({
+  limits: {
+      fileSize: 5000000
+  },
+  fileFilter(req,file,cb) {
+      if (!file.originalname.match(/\.(jpg|jpeg|png|JPG|PNG|JPEG|pdf|PDF|doc|DOC|DOCX|docx)$/)) {
+          return cb(new Error("Upload Proper File"))
+      }
+      cb(undefined,true)
+  }
+})
+
 
 router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
 
@@ -374,7 +386,7 @@ router.post('/approveEvent/:id/:approved', auth, async (req, res) => {
 
 //@route    /api/ccs/submit
 //@privacy  everyone who is logged in
-//@method   PoST
+//@method   POST
 //@res      submits the CCS application form
 
 router.post('/ccs/submit', auth, async (req, res) => {
@@ -382,7 +394,7 @@ router.post('/ccs/submit', auth, async (req, res) => {
     const { name, email, phNum, whatsapp, regNum, depts, strengths, weaknesses, whyDoYouJoin } = req.body;
 
     const newCCS = new CCS({
-      name, email, phNum, whatsapp, regNum, depts, strengths, weaknesses, whyDoYouJoin
+      name, email, phNum, whatsapp, regNum, depts, strengths, weaknesses, whyDoYouJoin, applicant: req.user._id
     });
 
     await newCCS.save()
@@ -392,9 +404,13 @@ router.post('/ccs/submit', auth, async (req, res) => {
     res.status(500).send(error)
   }
 
-});
+})
 
-router.get('/ccs/submissions', auth, memberAuth, async (req, res) => {
+//@route    /api/ccs/submissions
+//@privacy  All THEPC members
+//@method   GET
+//@res      Gets all CCS submissions
+router.get('/ccs/submissions', auth, memberAuth, ccsDoc.single("ccsFile"), async (req, res) => {
   const allSubmissions = await User.find()
   if(!allSubmissions){
     res.status(404).send({"message": "No submissions found!"})
@@ -402,9 +418,25 @@ router.get('/ccs/submissions', auth, memberAuth, async (req, res) => {
   res.status(200).send(allSubmissions)
 })
 
-// router.post('ccs/fileUpload', auth, async)
+//@route    /api/ccs/fileUpload
+//@privacy  Everyone who is logged in
+//@method   POST
+//@res      Submits the CCS document and adds it to the existing CCS application
+router.post('ccs/fileUpload', auth, async (req, res) => {
+  const userSub = await CCS.find({"applicant": req.user._id})
 
+  if(!userSub){
+    res.status(500).send({"message": "You have not applied for CCS. This is not applicable for you!"})
+  }
 
-//file upload
+  const buffer = await sharp(req.file.buffer).png().toBuffer()
+
+  userSub.ccsFile = buffer
+
+  await userSub.save()
+
+  res.status(200).send(userSub)
+})
+
 module.exports = router
 
