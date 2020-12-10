@@ -394,5 +394,17 @@ router.post('/ccs/submit', auth, async (req, res) => {
 
 });
 
+router.get('/ccs/submissions', auth, memberAuth, async (req, res) => {
+  const allSubmissions = await User.find()
+  if(!allSubmissions){
+    res.status(404).send({"message": "No submissions found!"})
+  }
+  res.status(200).send(allSubmissions)
+})
+
+// router.post('ccs/fileUpload', auth, async)
+
+
+//file upload
 module.exports = router
 
