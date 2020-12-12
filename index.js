@@ -8,6 +8,7 @@ const mongoose = require('mongoose')
 const passport = require("passport")
 
 const apiRouter = require("./routes/api")
+const googleRouter = require('./routes/google')
 const indexRouter = require("./routes/index")
 
 const app = express()
@@ -50,7 +51,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.use("/",indexRouter)
-// app.use("/auth",authRouter)
+app.use("/api/google", googleRouter)
 // app.use("/users",userRouter)
 app.use("/api",apiRouter)
 

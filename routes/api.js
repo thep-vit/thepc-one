@@ -7,26 +7,26 @@ const GoogleStrategy = require('passport-google-oauth20')
 const multer = require('multer')
 const sharp = require("sharp")
 const { check } = require('express-validator')
-const { ensureAuthenticated, auth, memberAuth, adminAuth } = require("../middleware/auth")
+const { auth, memberAuth, adminAuth } = require("../middleware/auth")
 
 const User = require('../models/User')
 const Event = require('../models/Event')
 const CCS = require('../models/CCS')
 
 
-const upload = multer({
-  limits: {
-      fileSize: 5000000
-  },
-  fileFilter(req,file,cb) {
-      if (!file.originalname.match(/\.(jpg|jpeg|png|JPG|PNG|JPEG)$/)) {
-          return cb(new Error("Upload Proper File"))
-      }
-      cb(undefined,true)
-  }
-})
+// const upload = multer({
+//   limits: {
+//       fileSize: 5000000
+//   },
+//   fileFilter(req,file,cb) {
+//       if (!file.originalname.match(/\.(jpg|jpeg|png|JPG|PNG|JPEG)$/)) {
+//           return cb(new Error("Upload Proper File"))
+//       }
+//       cb(undefined,true)
+//   }
+// })
 
-const ccsDoc = multer({
+const upload = multer({
   limits: {
       fileSize: 5000000
   },
@@ -52,102 +52,6 @@ router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
   router.get("/google",
     passport.authenticate('google', { scope: ['profile', 'email'] })
   );
-
-//API Documentation
-/**
- * @api {post} /api/newEvent
- * @apiName GoogleOAuth
- * @apiGroup Events
- *
- * @apiParam {String} eventName          Mandatory event name.
- * @apiParam {String} eventDesc          Mandatory event description.
- * @apiParam {String} eventLink          Mandatory  event link.
- * 
- * @apiSuccess {Boolean} approved Approval status of the event.
- * @apiSuccess {mongoID} _id  mongoID of the user object.
- * @apiSuccess {String} eventDesc Event description.
- * @apiSuccess {String} eventLink Link for the event.
- * @apiSuccess {String} eventName Name of the event.
- * @apiSuccess {Date} dateCreated Date of creation of the event.
- * @apiSuccess {String} token auth tokens array
- *
- * @apiSuccessExample newEvent:
- *     {
- *   "approved": false,
- *    "_id": "5f6870823dcf5d40a0fa6d28",
- *   "eventDesc": "ABC Event",
- *   "eventLink": "https://www.com",
- *   "eventName": "ABC",
- *   "dateCreated": "2020-09-21T09:21:06.111Z",
- *   "__v": 0
-}
- *
- * @apiError authError Please authenticate.
- * @apiError adminError You do not have admin rights.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "error": "UserNotFound"
- *     }
- **/
-/**
- * @api {patch} /api/approveEvent/:id
- * @apiName THEPC One
- * @apiGroup Events
- * 
- * @apiParam {String} id eventID which is stored as mongoID on teh database.
- * @apiSuccess {Boolean} approved Approval status of the event.
- * @apiSuccess {mongoID} _id  mongoID of the user object.
- * @apiSuccess {String} eventDesc Event description.
- * @apiSuccess {String} eventLink Link for the event.
- * @apiSuccess {String} eventName Name of the event.
- * @apiSuccess {Date} dateCreated Date of creation of the event.
- * @apiSuccess {String} token auth tokens array
- * @apiSuccessExample approvedEvent:
- *     {
- *   "approved": true,
- *    "_id": "5f6870823dcf5d40a0fa6d28",
- *   "eventDesc": "ABC Event",
- *   "eventLink": "https://www.com",
- *   "eventName": "ABC",
- *   "dateCreated": "2020-09-21T09:21:06.111Z",
- *   "__v": 0
-}
- *
- * @apiError authError Please authenticate.
- * @apiError adminError You do not have admin rights.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "error": "UserNotFound"
- *     }
- **/
-/** 
- * @api {get} /google/verified
- * @apiName GoogleOAuth
- * @apiGroup User
- *
- * @apiSuccess {Integer} memberType member classifications of Users.
- * @apiSuccess {mongoID} _id  mongoID of the user object.
- 
- *
- * @apiSuccessExample newEvent:
- *     HTTP/1.1 200 OK
- *     {
- *       "firstname": "John",
- *       "lastname": "Doe"
- *     }
- *
- * @apiError UserNotFound The id of the User was not found.
- *
- * @apiErrorExample Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "error": "UserNotFound"
- *     }
- **/
 
 passport.use(new GoogleStrategy({
     clientID: "390060085294-k1l5r25ugf2jpsqorsmns7m8o3ject6f.apps.googleusercontent.com",
@@ -410,7 +314,7 @@ router.post('/ccs/submit', auth, async (req, res) => {
 //@privacy  All THEPC members
 //@method   GET
 //@res      Gets all CCS submissions
-router.get('/ccs/submissions', auth, memberAuth, ccsDoc.single("ccsFile"), async (req, res) => {
+router.get('/ccs/submissions', auth, memberAuth, async (req, res) => {
   const allSubmissions = await CCS.find()
   if(!allSubmissions){
     res.status(404).send({"message": "No submissions found!"})
@@ -422,20 +326,21 @@ router.get('/ccs/submissions', auth, memberAuth, ccsDoc.single("ccsFile"), async
 //@privacy  Everyone who is logged in
 //@method   POST
 //@res      Submits the CCS document and adds it to the existing CCS application
-router.post('/ccs/fileUpload', auth, ccsDoc.single("ccsFile"), async (req, res) => {
-  const userSub = await CCS.find({"applicant": req.user._id})
+router.post('/ccs/fileUpload', auth, upload.single("ccsFile"), async (req, res) => {
+  const userSub = await CCS.findOne({"applicant": req.user._id})
 
   if(!userSub){
     res.status(500).send({"message": "You have not applied for CCS. This is not applicable for you!"})
   }
 
-  const buffer = await sharp(req.file.buffer).toBuffer()
-  // let entryType = req.files.draft.mimetype;
-  // entryType = entryType.split('/')[1];
+  const ccsDoc = await req.file.buffer 
+  let entryType = req.file.mimetype
+  entryType = entryType.split('/')[1]
   
-  userSub.ccsFile = buffer
+  userSub.ccsDoc = ccsDoc
+  userSub.entryType = entryType
 
-  await userSub.save()
+  await userSub.save
 
   res.status(200).send(userSub)
 })
