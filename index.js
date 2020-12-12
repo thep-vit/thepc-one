@@ -51,7 +51,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.use("/",indexRouter)
-app.use("/api/google", googleRouter)
+// app.use("/api/google", googleRouter)
 // app.use("/users",userRouter)
 app.use("/api",apiRouter)
 
