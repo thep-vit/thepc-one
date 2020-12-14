@@ -7,11 +7,11 @@ const CCSSchema = new mongoose.Schema({
     email: {
         type: String
     },
-    phone: {
-        type: String
+    phNum: {
+        type: Number
     },
     whatsapp: {
-        type: String
+        type: Number
     },
     regNum: {
         type: String

@@ -303,6 +303,11 @@ router.post('/ccs/submit', auth, async (req, res) => {
 
     await newCCS.save()
 
+    const reqUser = req.user
+    reqUser.ccsSub = true
+
+    await reqUser.save()
+
     res.status(200).send(newCCS)
   } catch (error) {
     res.status(500).send(error)
