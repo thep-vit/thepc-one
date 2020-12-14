@@ -303,11 +303,15 @@ router.post('/ccs/submit', auth, async (req, res) => {
 
     await newCCS.save()
 
-    const reqUser = req.user
-    reqUser.ccsSub = true
+    const reqUser = await User.findOne({_id: req.user._id})
+    if(reqUser.ccsSub){
+      throw Error({"error": "You have already participated in this event!"})
+    }else{
+      reqUser.ccsSub = true
+      await reqUser.save()
+    }
 
-    await reqUser.save()
-
+    console.log(reqUser)
     res.status(200).send(newCCS)
   } catch (error) {
     res.status(500).send(error)
