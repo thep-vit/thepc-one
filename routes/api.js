@@ -13,6 +13,7 @@ const { logger }  = require("../middleware/reqLogger")
 const User = require('../models/User')
 const Event = require('../models/Event')
 const CCS = require('../models/CCS')
+const Log = require('../models/Log')
 
 
 // const upload = multer({
@@ -72,8 +73,24 @@ passport.use(new GoogleStrategy({
           email: profile.emails[0].value,
           photo: profile.photos[0].value
         });
-        await nUser.generateToken();
+        const userToken = await nUser.generateToken();
         await nUser.save();
+
+        const userEmail = nUser.email
+
+        const addLog = {
+            route: '/auth/google',
+            method: 'POST',
+            date: Date.now()
+        }
+        const newLog = new Log({
+            userEmail: userEmail,
+            startTime: Date.now(),
+            startToken: userToken
+        })
+
+        newLog.logs.push(addLog)
+        await newLog.save()
         console.log(profile);
         return done(null, nUser);
       }
@@ -131,7 +148,27 @@ passport.use(new GoogleStrategy({
       }else{
         const newUser = new User({email: email, password: password, username:name});
         await newUser.save();
-        await newUser.generateToken();
+        const userToken = await newUser.generateToken();
+
+        console.log(newUser)
+
+        // const userToken = newUser.tokens[req.user.tokens.length - 1].token
+        const userEmail = req.body.email
+        
+        const addLog = {
+          route: '/user/signup',
+          method: 'POST',
+          date: Date.now()
+        }
+
+        const newLog = new Log({
+            userEmail: userEmail,
+            startTime: Date.now(),
+            startToken: userToken
+        })
+
+        newLog.logs.push(addLog)
+        await newLog.save()
         return res.status(200).send(newUser);
 
       }
@@ -148,7 +185,22 @@ passport.use(new GoogleStrategy({
   router.post('/user/login', async (req, res) => {
     try {
         const userFound = await User.findByCredentials(req.body.email, req.body.password);
-        await userFound.generateToken();
+        const userToken = await userFound.generateToken();
+        const userEmail = req.body.email
+
+        const addLog = {
+            route: '/user/login',
+            method: 'POST',
+            date: Date.now()
+        }
+        const newLog = new Log({
+            userEmail: userEmail,
+            startTime: Date.now(),
+            startToken: userToken
+        })
+
+        newLog.logs.push(addLog)
+        await newLog.save()
 
         res.status(200).send(userFound);
     } catch (err) {
