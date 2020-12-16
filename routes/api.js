@@ -8,6 +8,7 @@ const multer = require('multer')
 const sharp = require("sharp")
 const { check } = require('express-validator')
 const { auth, memberAuth, adminAuth } = require("../middleware/auth")
+const { logger }  = require("../middleware/reqLogger")
 
 const User = require('../models/User')
 const Event = require('../models/Event')
@@ -39,7 +40,7 @@ const upload = multer({
 })
 
 
-router.patch('/approveEvent/:id', auth, adminAuth, async (req, res) => {
+router.patch('/approveEvent/:id', auth, logger, adminAuth, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
 
@@ -179,7 +180,7 @@ passport.use(new GoogleStrategy({
   //@privacy  auth users
   //@method   PATCH
   //@res      Register user for event with id = req.params.id  
-  router.patch('/user/:eventID', auth, async (req, res) => {
+  router.patch('/user/:eventID', auth, logger, async (req, res) => {
     const user = req.user;
     const foundEvent = await Event.findById({_id: req.params.eventID})
     
@@ -245,7 +246,7 @@ passport.use(new GoogleStrategy({
   //@privacy  only members
   //@method   POST
   //@res      Adds a new event to the list of events
-  router.post('/newEvent', auth, memberAuth, upload.single("eventImg"), async (req, res) => {
+  router.post('/newEvent', auth, memberAuth, logger, upload.single("eventImg"), async (req, res) => {
     const {eventName, textTime, eventDesc, eventLink, numTextBoxes, numMultiChoice, numOptions, numFileUploads, isTextBoxes, isMultiChoice, isFileUpload, eventStart, eventEnd, regStart} = req.body;
 
     console.log(req.file)
@@ -273,7 +274,7 @@ passport.use(new GoogleStrategy({
   //@privacy  only board members
   //@method   PATCH
   //@res      Approves the event with id = req.params.id
-router.post('/approveEvent/:id/:approved', auth, async (req, res) => {
+router.post('/approveEvent/:id/:approved', auth, logger, async (req, res) => {
 
   const foundEvent = await Event.findById(req.params.id);
 
@@ -293,7 +294,7 @@ router.post('/approveEvent/:id/:approved', auth, async (req, res) => {
 //@method   POST
 //@res      submits the CCS application form
 
-router.post('/ccs/submit', auth, async (req, res) => {
+router.post('/ccs/submit', auth, logger, async (req, res) => {
   try {
     const { name, email, phNum, whatsapp, regNum, depts, strengths, weaknesses, whyDoYouJoin } = req.body;
 
@@ -311,7 +312,7 @@ router.post('/ccs/submit', auth, async (req, res) => {
       await reqUser.save()
     }
 
-    console.log(reqUser)
+    // console.log(reqUser)
     res.status(200).send(newCCS)
   } catch (error) {
     res.status(500).send(error)
@@ -323,7 +324,7 @@ router.post('/ccs/submit', auth, async (req, res) => {
 //@privacy  All THEPC members
 //@method   GET
 //@res      Gets all CCS submissions
-router.get('/ccs/submissions', auth, memberAuth, async (req, res) => {
+router.get('/ccs/submissions', auth, memberAuth, logger, async (req, res) => {
   const allSubmissions = await CCS.find()
   if(!allSubmissions){
     res.status(404).send({"message": "No submissions found!"})
@@ -335,7 +336,7 @@ router.get('/ccs/submissions', auth, memberAuth, async (req, res) => {
 //@privacy  Everyone who is logged in
 //@method   POST
 //@res      Submits the CCS document and adds it to the existing CCS application
-router.post('/ccs/fileUpload', auth, upload.single("ccsFile"), async (req, res) => {
+router.post('/ccs/fileUpload', auth, logger, upload.single("ccsFile"), async (req, res) => {
   const userSub = await CCS.findOne({"applicant": req.user._id})
 
   if(!userSub){
