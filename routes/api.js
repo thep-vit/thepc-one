@@ -9,6 +9,7 @@ const sharp = require("sharp")
 const { check } = require('express-validator')
 const { auth, memberAuth, adminAuth } = require("../middleware/auth")
 const { logger }  = require("../middleware/reqLogger")
+const jwt = require('jsonwebtoken')
 
 const User = require('../models/User')
 const Event = require('../models/Event')
@@ -320,7 +321,42 @@ passport.use(new GoogleStrategy({
   //@method   GET
   //@res      Gets all events
   router.get('/allEvents', async (req, res) => {
-    const allEvents = await Event.find();
+    const allEvents = await Event.find()
+
+    const token = req.headers.authorization.split(' ')[1]
+
+    if(token){
+      const decoded = jwt.verify(token, "THEPCONE")
+      const user = await User.findOne( { _id: decoded._id,memberType:decoded.memberType, "tokens.token":token })
+      if(!user) {
+          throw new Error()
+      }
+
+      const userToken = token
+      const foundLog = await Log.findOne({startToken: userToken})
+
+      const addLog = {
+        route: '/allEvents',
+        method: 'GET',
+        date: Date.now()
+      }
+
+        if(foundLog){
+            foundLog.logs.push(addLog)
+            await foundLog.save()
+        }else{
+            const newLog = new Log({
+                userEmail: userEmail,
+                startTime: Date.now(),
+                startToken: userToken
+            })
+
+            newLog.logs.push(addLog)
+            await newLog.save()
+        }
+
+    }
+
     console.log(allEvents);
     res.send(allEvents);
   });
