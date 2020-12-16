@@ -324,7 +324,7 @@ router.post('/ccs/submit', auth, logger, async (req, res) => {
 //@privacy  All THEPC members
 //@method   GET
 //@res      Gets all CCS submissions
-router.get('/ccs/submissions', auth, memberAuth, logger, async (req, res) => {
+router.get('/ccs/submissions', auth, memberAuth, async (req, res) => {
   const allSubmissions = await CCS.find()
   if(!allSubmissions){
     res.status(404).send({"message": "No submissions found!"})
