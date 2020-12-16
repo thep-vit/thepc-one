@@ -15,7 +15,7 @@ const logger = async function(req, res, next){
 
         if(foundLog){
             foundLog.logs.push(addLog)
-            res.send(foundLog)
+            await foundLog.save()
         }else{
             const newLog = new Log({
                 userEmail: userEmail,
@@ -24,8 +24,10 @@ const logger = async function(req, res, next){
             })
 
             newLog.logs.push(addLog)
-            res.send(newLog)
+            await newLog.save()
         }
+
+        next()
     } catch (error) {
         res.status(500).send(error)
     }
