@@ -323,9 +323,8 @@ passport.use(new GoogleStrategy({
   router.get('/allEvents', async (req, res) => {
     const allEvents = await Event.find()
 
-    const token = req.headers.authorization.split(' ')[1]
-
-    if(token){
+    if(req.headers.authorization){
+      const token = req.headers.authorization.split(' ')[1]
       const decoded = jwt.verify(token, "THEPCONE")
       const user = await User.findOne( { _id: decoded._id,memberType:decoded.memberType, "tokens.token":token })
       if(!user) {
