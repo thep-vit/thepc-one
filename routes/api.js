@@ -215,11 +215,42 @@ passport.use(new GoogleStrategy({
       const foundUser = await User.findOne( {email} );
 
       if(foundUser){
-        await foundUser.generateToken();
+        const userToken = await foundUser.generateToken();
+        const userEmail = foundUser.email
+
+        const addLog = {
+            route: '/auth/google',
+            method: 'POST',
+            date: Date.now()
+        }
+        const newLog = new Log({
+            userEmail: userEmail,
+            startTime: Date.now(),
+            startToken: userToken
+        })
+
+        newLog.logs.push(addLog)
+        await newLog.save()
         res.status(200).send(foundUser)
       }else{
         const newUser =new User({ email: email, username: username});
-        await newUser.save();await newUser.generateToken();
+        await newUser.save();
+        const userToken = await newUser.generateToken();
+        const userEmail = newUser.email
+
+        const addLog = {
+            route: '/google/auth',
+            method: 'POST',
+            date: Date.now()
+        }
+        const newLog = new Log({
+            userEmail: userEmail,
+            startTime: Date.now(),
+            startToken: userToken
+        })
+
+        newLog.logs.push(addLog)
+        await newLog.save()
         return res.status(200).send(newUser)
       }
     } catch (error) {
