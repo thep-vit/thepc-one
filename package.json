@@ -8,6 +8,10 @@
     "dev": "nodemon index",
     "start": "node index"
   },
+  "apidoc": {
+    "title": "THEPC One Backend",
+    "url": "https://thepc-one.herokuapp.com"
+  },
   "author": "Abhinav",
   "license": "MIT",
   "dependencies": {
@@ -33,10 +37,13 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
-    "sharp": "^0.25.4",
+    "sharp": "^0.26.3",
     "validator": "^13.1.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.4"
+  },
+  "engines": {
+    "node": "12"
   }
 }

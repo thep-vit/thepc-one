@@ -2,7 +2,7 @@ const express = require("express")
 const router = express.Router()
 const User = require("../models/User")
 const passport = require('passport')
-const { ensureAuthenticated, isAdmin } = require("../config/auth")
+const { ensureAuthenticated } = require("../middleware/auth")
 
 const Event = require('../models/Event');
 
